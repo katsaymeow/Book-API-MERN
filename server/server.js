@@ -1,17 +1,20 @@
 const express = require('express');
-// added Apollo server will need an install still
+// added Apollo server will need an install still maybe not this
 const { ApolloServer } = require('apollo-server-express');
 const path = require('path');
+const { authMiddleware } = require('./utils/auth');
 const db = require('./config/connection');
-const routes = require('./routes');
+// const routes = require('./routes');
 // added typeDef and resolvers-need to make
 const { typeDefs, resolvers } = require('./schemas');
+const { authMiddleware } = require('./utils/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: authMiddleware,
 });
 
 app.use(express.urlencoded({ extended: true }));
@@ -21,13 +24,14 @@ app.use(express.json());
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 }
-// may not need this adding until sure check before install
+
+// app.use(routes);
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
-app.use(routes);
-// creates a ne Apollo server to use GraphQL schema
+// creates an Apollo server to use GraphQL schema
 const startApolloServer = async (typeDefs, resolvers) => {
   await server.start();
   server.applyMiddleware({ app });
