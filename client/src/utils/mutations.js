@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 
 //LOGIN_USER will execute the loginUser mutation set up using Apollo Server.
-export const LOGIN_USER = ggl `
+export const LOGIN_USER = gql `
     mutation login($email: String!, $password: String!){
         login(email: $email, password: $password){
             token
@@ -26,10 +26,11 @@ export const ADD_USER = ggl`
     }
 `;
 
-// SAVE_BOOK will execute the saveBook mutation.
+// SAVE_BOOK will execute the saveBook mutation.\
+// change the token and user
 export const SAVE_BOOK =ggl`
-    mutation saveBook($bookId: String!){
-        saveBook(bookId: $bookId){
+    mutation saveBook($bookData: bookInput!){
+        saveBook(bookData: $bookData){
             token
             user{
                 _id

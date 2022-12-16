@@ -9,7 +9,7 @@ const { signToken } = require('../utils/auth');
 
 const resolvers = {
     Query: {
-        user: async (parent, { _id, username }) => {
+        me: async (parent, { _id, username }) => {
             return User.findOne({ _id, username });
         },
         
@@ -34,12 +34,31 @@ const resolvers = {
             return { token, user };
         },
 
-        // are these queries or mutations?
-        saveBook: async ( parent, { username, body }, bookId)=>{
-
+        // are these mutations?
+        saveBook: async ( parent, {bookData}, context)=>{
+            if(context.user) {
+               const updateBook = await User.findOneAndUpdate(
+                { _id: context.user_id },
+                { $addToSet: { savedBooks: input } },
+                { new: true }
+               ).populate('savedBooks');
+               return updateBook;
+            } else {
+                throw new AuthenticationError('You must be logged in to save your favorite books')
+            }
         },
-        deleteBook: async ( parent, { user, params}, bookId)=>{
-
+        deleteBook: async ( parent, { bookId }, context)=>{
+            if (context.user) {
+                const deleteBook = await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $pull: { savedBooks: { bookId: bookId } } },
+                    { new: true }
+                ).populate('savedBooks');
+                return deleteBook;
+            }
+            throw new AuthenticationError('You must be logged in to delete this book')
         },
     }
 }
+
+module.exports = resolvers;
